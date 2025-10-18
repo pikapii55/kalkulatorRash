@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator KPI Barista</title>
+  <style>
+    /* 🌿 STYLE UTAMA */
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 10px;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      max-width: 450px;
+      width: 100%;
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    }
+
+    .result {
+      background: #f9fbfc;
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .result-item {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-item span {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #007bff;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #777;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kalkulator KPI Barista</h1>
+
+    <label>Total Produk Terjual</label>
+    <input type="number" id="itemSold" placeholder="contoh: 437">
+
+    <label>Total Food Terjual</label>
+    <input type="number" id="foodSold" placeholder="contoh: 35">
+
+    <label>Total Transaksi (ADT)</label>
+    <input type="number" id="adt" placeholder="contoh: 246">
+
+    <label>Total Jam Kerja Barista</label>
+    <input type="number" id="workingHours" placeholder="contoh: 36">
+
+    <div class="result">
+      <div class="result-item">
+        <span>IPLH:</span>
+        <span id="iplh">-</span>
+      </div>
+      <div class="result-item">
+        <span>IPT:</span>
+        <span id="ipt">-</span>
+      </div>
+      <div class="result-item">
+        <span>UPH (%):</span>
+        <span id="uph">-</span>
+      </div>
+    </div>
+
+    <footer>© 2025 KPI Auto Calculator</footer>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll("input");
+    inputs.forEach(input => input.addEventListener("input", hitung));
+
+    function hitung() {
+      const itemSold = parseFloat(document.getElementById("itemSold").value) || 0;
+      const foodSold = parseFloat(document.getElementById("foodSold").value) || 0;
+      const adt = parseFloat(document.getElementById("adt").value) || 0;
+      const workingHours = parseFloat(document.getElementById("workingHours").value) || 0;
+
+      const iplh = workingHours ? (itemSold / workingHours).toFixed(1) : "-";
+      const ipt = adt ? (itemSold / adt).toFixed(1) : "-";
+      const uph = adt ? ((foodSold / adt) * 100).toFixed(1) : "-";
+
+      document.getElementById("iplh").textContent = iplh;
+      document.getElementById("ipt").textContent = ipt;
+      document.getElementById("uph").textContent = uph;
+    }
+  </script>
+</body>
+</html>

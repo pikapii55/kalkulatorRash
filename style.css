@@ -1,0 +1,10 @@
+.result-item span {
+    font-weight: bold;
+    font-size: 1.4rem;
+    color: #007BFF;
+    transition: color 0.3s, transform 0.3s;
+}
+.result-item span:hover {
+    color: #28a745;
+    transform: scale(1.1);
+}
