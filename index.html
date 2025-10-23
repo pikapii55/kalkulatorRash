@@ -4,119 +4,432 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator Rash</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    /* 🌿 STYLE UTAMA */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: "Poppins", sans-serif;
-      background-color: #f4f6f8;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
-      margin: 0;
-      padding: 40px 10px;
-      color: #333;
+      padding: 60px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.8; }
     }
 
     .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-      max-width: 450px;
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(20px);
+      padding: 48px;
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      max-width: 580px;
       width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      margin-bottom: 40px;
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
-      color: #007bff;
-      font-size: 1.6rem;
-      margin-bottom: 20px;
+      color: #ffffff;
+      font-size: 2.25rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.2), transparent);
+      margin: 32px 0;
+    }
+
+    .input-section {
+      margin-bottom: 36px;
+    }
+
+    .input-group {
+      margin-bottom: 24px;
+      position: relative;
     }
 
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: 600;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      letter-spacing: 0.3px;
     }
 
     input {
       width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 14px 18px;
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
       font-size: 1rem;
-      transition: border-color 0.3s ease;
+      background: rgba(15, 23, 42, 0.5);
+      color: #e2e8f0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input:hover {
+      border-color: rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.7);
     }
 
     input:focus {
       outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+      border-color: #3b82f6;
+      background: rgba(15, 23, 42, 0.8);
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      transform: translateY(-1px);
+    }
+
+    input::placeholder {
+      color: #64748b;
     }
 
     .result {
-      background: #f9fbfc;
-      margin-top: 25px;
-      padding: 15px;
-      border-radius: 12px;
-      border: 1px solid #e0e0e0;
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(88, 28, 135, 0.2) 100%);
+      padding: 32px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #f1f5f9;
+      font-size: 1.1rem;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
     }
 
     .result-item {
-      margin: 10px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 18px 20px;
+      margin-bottom: 12px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all 0.3s ease;
     }
 
-    .result-item span {
+    .result-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .result-item:hover {
+      background: rgba(15, 23, 42, 0.7);
+      border-color: rgba(59, 130, 246, 0.3);
+      transform: translateX(4px);
+    }
+
+    .result-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: #f1f5f9;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+    }
+
+    .result-desc {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .result-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .result-value {
       font-weight: 700;
-      font-size: 1.2rem;
-      color: #007bff;
+      font-size: 1.75rem;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: all 0.3s ease;
+      min-width: 70px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-item:hover .result-value {
+      transform: scale(1.15);
+      filter: brightness(1.2);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+    }
+
+    .status-good {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .status-medium {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .status-low {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .btn {
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(71, 85, 105, 0.5);
+      color: #cbd5e1;
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(71, 85, 105, 0.7);
+      border-color: rgba(148, 163, 184, 0.4);
+      transform: translateY(-2px);
     }
 
     footer {
       text-align: center;
-      font-size: 0.9rem;
-      color: #777;
-      margin-top: 20px;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 30px 16px;
+      }
+
+      .container {
+        padding: 32px 24px;
+      }
+
+      h1 {
+        font-size: 1.75rem;
+      }
+
+      .button-group {
+        grid-template-columns: 1fr;
+      }
+
+      .result-value {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Kalkulator Rash</h1>
+    <div class="header">
+      <h1>Kalkulator Rash</h1>
+      <p class="subtitle">Analisis performa dan produktivitas Fore</p>
+    </div>
 
-    <label>Total Produk Terjual</label>
-    <input type="number" id="itemSold" placeholder="contoh: 437">
+    <div class="divider"></div>
 
-    <label>Total Food Terjual</label>
-    <input type="number" id="foodSold" placeholder="contoh: 35">
-
-    <label>Total Transaksi (ADT)</label>
-    <input type="number" id="adt" placeholder="contoh: 246">
-
-    <label>Total Jam Kerja Barista</label>
-    <input type="number" id="workingHours" placeholder="contoh: 36">
-
-    <div class="result">
-      <div class="result-item">
-        <span>IPLH:</span>
-        <span id="iplh">-</span>
+    <div class="input-section">
+      <div class="input-group">
+        <label>Total Produk Terjual</label>
+        <input type="number" id="itemSold" placeholder="Contoh: 437">
       </div>
-      <div class="result-item">
-        <span>IPT:</span>
-        <span id="ipt">-</span>
+
+      <div class="input-group">
+        <label>Total Food Terjual</label>
+        <input type="number" id="foodSold" placeholder="Contoh: 35">
       </div>
-      <div class="result-item">
-        <span>UPH (%):</span>
-        <span id="uph">-</span>
+
+      <div class="input-group">
+        <label>Total Transaksi (ADT)</label>
+        <input type="number" id="adt" placeholder="Contoh: 246">
+      </div>
+
+      <div class="input-group">
+        <label>Total Jam Kerja Barista</label>
+        <input type="number" id="workingHours" placeholder="Contoh: 36">
       </div>
     </div>
 
-    <footer>© 2025 Kalkulator For Rash</footer>
+    <div class="result">
+      <div class="result-title">Hasil Analisis</div>
+      
+      <div class="result-item">
+        <div class="result-left">
+          <span class="result-label">IPLH</span>
+          <span class="result-desc">Item per jam kerja</span>
+        </div>
+        <div class="result-right">
+          <span class="result-value" id="iplh">-</span>
+          <span class="status-badge" id="iplh-status"></span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-left">
+          <span class="result-label">IPT</span>
+          <span class="result-desc">Item per transaksi</span>
+        </div>
+        <div class="result-right">
+          <span class="result-value" id="ipt">-</span>
+          <span class="status-badge" id="ipt-status"></span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div class="result-left">
+          <span class="result-label">UPH</span>
+          <span class="result-desc">Persentase food</span>
+        </div>
+        <div class="result-right">
+          <span class="result-value" id="uph">-</span>
+          <span class="status-badge" id="uph-status"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn btn-primary" onclick="exportToExcel()">Export Excel</button>
+      <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+    </div>
+
+    <footer>© 2025 Kalkulator Rash</footer>
   </div>
 
   <script>
@@ -135,7 +448,262 @@
 
       document.getElementById("iplh").textContent = iplh;
       document.getElementById("ipt").textContent = ipt;
-      document.getElementById("uph").textContent = uph;
+      document.getElementById("uph").textContent = uph + (uph !== "-" ? "%" : "");
+
+      updateStatus("iplh", parseFloat(iplh), 12, 8);
+      updateStatus("ipt", parseFloat(ipt), 1.8, 1.5);
+      updateStatus("uph", parseFloat(uph), 15, 10);
+    }
+
+    function updateStatus(metric, value, goodThreshold, mediumThreshold) {
+      const statusElement = document.getElementById(metric + "-status");
+      
+      if (isNaN(value)) {
+        statusElement.textContent = "";
+        statusElement.className = "status-badge";
+        return;
+      }
+
+      if (value >= goodThreshold) {
+        statusElement.textContent = "Bagus";
+        statusElement.className = "status-badge status-good";
+      } else if (value >= mediumThreshold) {
+        statusElement.textContent = "Cukup";
+        statusElement.className = "status-badge status-medium";
+      } else {
+        statusElement.textContent = "Kurang";
+        statusElement.className = "status-badge status-low";
+      }
+    }
+
+    function resetForm() {
+      document.querySelectorAll("input").forEach(input => input.value = "");
+      document.getElementById("iplh").textContent = "-";
+      document.getElementById("ipt").textContent = "-";
+      document.getElementById("uph").textContent = "-";
+      document.querySelectorAll(".status-badge").forEach(badge => {
+        badge.textContent = "";
+        badge.className = "status-badge";
+      });
+    }
+
+    function exportToExcel() {
+      const itemSold = parseFloat(document.getElementById("itemSold").value) || 0;
+      const foodSold = parseFloat(document.getElementById("foodSold").value) || 0;
+      const adt = parseFloat(document.getElementById("adt").value) || 0;
+      const workingHours = parseFloat(document.getElementById("workingHours").value) || 0;
+
+      const iplh = workingHours ? (itemSold / workingHours).toFixed(1) : 0;
+      const ipt = adt ? (itemSold / adt).toFixed(1) : 0;
+      const uph = adt ? ((foodSold / adt) * 100).toFixed(1) : 0;
+
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('id-ID');
+      const timeStr = today.toLocaleTimeString('id-ID');
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Data Input & Hasil (Format Tabel dengan Border)
+      const ws1 = XLSX.utils.aoa_to_sheet([
+        ["LAPORAN KALKULATOR RASH"],
+        ["Tanggal", dateStr],
+        ["Waktu", timeStr],
+        [],
+        ["DATA INPUT"],
+        ["Metrik", "Nilai"],
+        ["Total Produk Terjual", itemSold],
+        ["Total Food Terjual", foodSold],
+        ["Total Transaksi (ADT)", adt],
+        ["Total Jam Kerja Barista", workingHours],
+        [],
+        ["HASIL ANALISIS"],
+        ["Metrik", "Nilai", "Status", "Keterangan"],
+        ["IPLH", iplh, getStatusText("iplh", parseFloat(iplh)), "Item Per Labor Hour"],
+        ["IPT", ipt, getStatusText("ipt", parseFloat(ipt)), "Item Per Transaction"],
+        ["UPH", uph + "%", getStatusText("uph", parseFloat(uph)), "Upsell Percentage"],
+      ]);
+
+      // Set column widths
+      ws1['!cols'] = [
+        { wch: 28 },
+        { wch: 18 },
+        { wch: 15 },
+        { wch: 30 }
+      ];
+
+      ws1['!ref'] = XLSX.utils.encode_range({s:{c:0,r:0},e:{c:3,r:15}});
+
+      // Merge cells untuk judul
+      if (!ws1['!merges']) ws1['!merges'] = [];
+      ws1['!merges'].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } });
+
+      // Apply borders dan styling
+      const borderStyle = {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+      };
+
+      const headerFill = {
+        fgColor: { rgb: "4472C4" }
+      };
+
+      const headerFont = {
+        bold: true,
+        color: { rgb: "FFFFFF" }
+      };
+
+      // Style untuk DATA INPUT table (A6:B10)
+      for (let R = 5; R <= 9; R++) {
+        for (let C = 0; C <= 1; C++) {
+          const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws1[cell_address]) continue;
+          if (!ws1[cell_address].s) ws1[cell_address].s = {};
+          ws1[cell_address].s.border = borderStyle;
+          
+          // Header styling
+          if (R === 5) {
+            ws1[cell_address].s.fill = headerFill;
+            ws1[cell_address].s.font = headerFont;
+            ws1[cell_address].s.alignment = { horizontal: "center", vertical: "center" };
+          }
+        }
+      }
+
+      // Style untuk HASIL ANALISIS table (A13:D16)
+      for (let R = 12; R <= 15; R++) {
+        for (let C = 0; C <= 3; C++) {
+          const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws1[cell_address]) continue;
+          if (!ws1[cell_address].s) ws1[cell_address].s = {};
+          ws1[cell_address].s.border = borderStyle;
+          
+          // Header styling
+          if (R === 12) {
+            ws1[cell_address].s.fill = headerFill;
+            ws1[cell_address].s.font = headerFont;
+            ws1[cell_address].s.alignment = { horizontal: "center", vertical: "center" };
+          }
+        }
+      }
+      
+      XLSX.utils.book_append_sheet(wb, ws1, "Laporan");
+
+      // Sheet 2: Standar Benchmark dengan Border
+      const ws2 = XLSX.utils.aoa_to_sheet([
+        ["STANDAR BENCHMARK"],
+        [],
+        ["Metrik", "Bagus (≥)", "Cukup (≥)", "Kurang (<)", "Penjelasan"],
+        ["IPLH", 12, 8, 8, "Produktivitas barista per jam kerja"],
+        ["IPT", 1.8, 1.5, 1.5, "Rata-rata item yang dibeli per transaksi"],
+        ["UPH", "15%", "10%", "10%", "Persentase transaksi yang membeli food"],
+        [],
+        ["CATATAN:"],
+        ["- IPLH mengukur efisiensi kerja barista"],
+        ["- IPT mengukur efektivitas upselling"],
+        ["- UPH mengukur performa penjualan food item"],
+        [],
+        ["Semakin tinggi nilai, semakin baik performa"]
+      ]);
+
+      ws2['!cols'] = [
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 40 }
+      ];
+
+      ws2['!ref'] = XLSX.utils.encode_range({s:{c:0,r:0},e:{c:4,r:12}});
+
+      if(!ws2['!merges']) ws2['!merges'] = [];
+      ws2['!merges'].push(
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } }
+      );
+
+      // Apply borders untuk Benchmark table (A3:E6)
+      for (let R = 2; R <= 5; R++) {
+        for (let C = 0; C <= 4; C++) {
+          const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws2[cell_address]) continue;
+          if (!ws2[cell_address].s) ws2[cell_address].s = {};
+          ws2[cell_address].s.border = borderStyle;
+          
+          // Header styling
+          if (R === 2) {
+            ws2[cell_address].s.fill = headerFill;
+            ws2[cell_address].s.font = headerFont;
+            ws2[cell_address].s.alignment = { horizontal: "center", vertical: "center" };
+          }
+        }
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws2, "Benchmark");
+
+      // Sheet 3: Riwayat dengan Border
+      const ws3 = XLSX.utils.aoa_to_sheet([
+        ["RIWAYAT PERHITUNGAN"],
+        [],
+        ["Tanggal", "IPLH", "IPT", "UPH", "Total Produk", "Total Food", "ADT", "Jam Kerja"],
+        [dateStr, iplh, ipt, uph + "%", itemSold, foodSold, adt, workingHours]
+      ]);
+
+      ws3['!cols'] = [
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 14 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 12 }
+      ];
+
+      ws3['!ref'] = XLSX.utils.encode_range({s:{c:0,r:0},e:{c:7,r:3}});
+
+      if(!ws3['!merges']) ws3['!merges'] = [];
+      ws3['!merges'].push(
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }
+      );
+
+      // Apply borders untuk Riwayat table (A3:H4)
+      for (let R = 2; R <= 3; R++) {
+        for (let C = 0; C <= 7; C++) {
+          const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws3[cell_address]) continue;
+          if (!ws3[cell_address].s) ws3[cell_address].s = {};
+          ws3[cell_address].s.border = borderStyle;
+          
+          // Header styling
+          if (R === 2) {
+            ws3[cell_address].s.fill = headerFill;
+            ws3[cell_address].s.font = headerFont;
+            ws3[cell_address].s.alignment = { horizontal: "center", vertical: "center" };
+          }
+        }
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws3, "Riwayat");
+
+      // Export
+      const fileName = `Laporan_Rash_${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    }
+
+    function getStatusText(metric, value) {
+      if (isNaN(value)) return "-";
+
+      const thresholds = {
+        iplh: { good: 12, medium: 8 },
+        ipt: { good: 1.8, medium: 1.5 },
+        uph: { good: 15, medium: 10 }
+      };
+
+      const t = thresholds[metric];
+      if (value >= t.good) return "Bagus";
+      if (value >= t.medium) return "Cukup";
+      return "Kurang";
     }
   </script>
 </body>
